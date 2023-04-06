@@ -1,0 +1,358 @@
+#include <LiquidCrystal.h>
+#include <Keypad.h>
+#include<Servo.h>
+Servo medc1;
+Servo medc2;
+int tab=0;
+const byte ROWS = 4; //four rows
+const byte COLS = 4; //four columns
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+int buz=A3;
+int x;
+char hexaKeys[ROWS][COLS] = {
+  {'1','2','3','0'},
+  {'4','5','6','0'},
+  {'7','8','9','0'},
+  {'*','0','#','0'}
+};
+char customKey;
+byte rowPins[ROWS] = {13, 12, 11, 10}; //connect to the row pinouts of the keypad
+byte colPins[COLS] = {9, 8, A0, A1}; //connect to the column pinouts of the keypad
+String amt;
+Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+int bal1=50,bal2=20,tcnt,rck;
+String ph1="6301566768", ph2="6301566768";
+
+void setup() {
+  lcd.begin(16,2);
+  lcd.print("WELCOME");
+  Serial.begin(9600);
+  pinMode(buz,OUTPUT);
+  digitalWrite(buz,0);
+  medc1.attach(A4);
+  medc2.attach(A5);
+  delay(100);
+  medc1.write(0);
+  delay(300);
+  medc2.write(0);
+  delay(300);
+}
+
+void loop() {
+xx:
+lcd.clear();
+lcd.print("Please Scan card");
+delay(50);
+String rfid="";
+
+  if(Serial.available())
+  {
+    for(int i=0;i<=11;i++)
+    {
+      rfid +=char(Serial.read());
+      delay(5);
+      Serial.print("1");
+    }
+    int ch=Serial.read();
+    delay(5);
+    ch=Serial.read();
+    delay(5);
+    ch=Serial.read();
+    delay(5);
+    ch=Serial.read();
+     lcd.clear();
+      lcd.print(rfid);
+      delay(5000);
+    if(rfid == "110023A01684")
+    {
+      lcd.setCursor(0,1);
+      lcd.print("USER-1");
+  again:    delay(2000);
+
+      lcd.clear();
+      lcd.print("Pls Slct Tablet");
+      lcd.setCursor(0,1);
+      lcd.print("1.Fever 2.Pain ");
+      sss:
+      tab=0;
+      customKey = customKeypad.getKey(); 
+      if (customKey=='1' || customKey=='2')
+      {
+      if(customKey=='1')
+      {
+        tab=1;
+        lcd.clear();
+        lcd.print("Fever");
+      }
+
+      if(customKey=='2')
+      {
+        tab=2;
+        lcd.clear();
+        lcd.print("Pain");
+      }
+      }
+      else
+      goto sss;
+
+
+
+      
+      lcd.clear();
+      lcd.print("Pls Select AGE..");
+      lcd.setCursor(0,1);
+      lcd.print("1.<6 2.<16 3.>15 ");
+      ss:
+      customKey = customKeypad.getKey(); 
+      if (customKey=='1' || customKey=='2' || customKey=='3' || customKey=='*')
+      {
+      if(customKey=='1')
+      {
+        lcd.clear();
+        lcd.print("<6 years");
+      }
+
+      if(customKey=='2')
+      {
+        lcd.clear();
+        lcd.print(">5 and <16");
+      }
+
+      if(customKey=='3')
+      {
+        lcd.clear();
+        lcd.print(">15");
+      }
+
+      }
+     
+      else
+      goto ss;
+      
+      lcd.setCursor(0,1);
+      lcd.print("Qty:");
+      for(int pi=0;pi<1;pi++)
+      {
+      customKey = customKeypad.getKey(); 
+      if (customKey)
+      {
+        lcd.print(" " + String(customKey));
+        tcnt=tcnt+(customKey-48);
+        lcd.print(" TC:" + String(tcnt));
+      }
+      else
+      pi=pi-1;  
+      }
+      
+      delay(1500);
+
+      lcd.setCursor(0,1);
+      lcd.print("T:"+ String(tcnt*2) +"Rs A: * P: # ");
+      rck=0;
+      while(rck==0)
+      {
+      customKey = customKeypad.getKey(); 
+      if (customKey=='*')
+      rck=1;
+      if(customKey=='#')
+      rck=2;
+      }
+
+      if(rck==1)
+      {
+        goto again;
+      }
+      delay(1500);
+
+      
+      if(bal1> ((tcnt)*2))
+      {
+      lcd.clear();
+      lcd.print("Please Collect:");
+      bal1=bal1-(tcnt*2);
+      if(tab==1)
+      {
+        for(int k=0;k<(tcnt);k++)
+        { 
+        medc1.write(100);
+        delay(500);
+        medc1.write(0);
+        delay(1500);
+        }
+      }
+
+            if(tab==2)
+      {
+        for(int k=0;k<(tcnt);k++)
+        { 
+        medc1.write(100);
+        delay(500);
+        medc1.write(0);
+        delay(1500);
+        }
+      }
+send_sms(1);
+      delay(500);
+      }
+      else
+      {
+    lcd.clear();
+      lcd.print("No balance..");
+        
+      }
+      delay(3000);
+      tcnt=0;                
+    }   
+
+        if(rfid == "110023A2FE6E")
+    {
+      lcd.setCursor(0,1);
+      lcd.print("USER-2");
+      delay(2000);
+
+
+
+      lcd.clear();
+      lcd.print("Pls Slct Tablet");
+      lcd.setCursor(0,1);
+      lcd.print("1.Fever 2.Pain ");
+      sss1:
+      customKey = customKeypad.getKey(); 
+      tab=0;
+      if (customKey=='1' || customKey=='2')
+      {
+      if(customKey=='1')
+      {
+        tab=1;
+        lcd.clear();
+        lcd.print("Fever");
+      }
+
+      if(customKey=='2')
+      {
+        tab=2;
+        lcd.clear();
+        lcd.print("Pain");
+      }
+      }
+      else
+      goto sss1;
+
+      
+      lcd.clear();
+      lcd.print("Pls Select AGE..");
+      lcd.setCursor(0,1);
+      lcd.print("1.<6 2.<16 3.>15 ");
+      ss1:
+      customKey = customKeypad.getKey(); 
+      if (customKey=='1' || customKey=='2' || customKey=='3' || customKey=='*')
+      {
+      if(customKey=='1')
+      {
+        lcd.clear();
+        lcd.print("<6 years");
+      }
+
+      if(customKey=='2')
+      {
+        lcd.clear();
+        lcd.print(">5 and <16");
+      }
+
+      if(customKey=='3')
+      {
+        lcd.clear();
+        lcd.print(">15");
+      }
+
+      }
+     
+      else
+      goto ss1;
+      
+      lcd.setCursor(0,1);
+      lcd.print("ENTER Qty:");
+      for(int pi=0;pi<1;pi++)
+      {
+      customKey = customKeypad.getKey(); 
+      if (customKey)
+      {
+        lcd.print(" " + String(customKey));
+      }
+      else
+      pi=pi-1;  
+      }
+      delay(1500);
+      if(bal2> ((customKey-48)*2))
+      {
+        bal2=bal2-(customKey-48)*2;
+      lcd.clear();
+      lcd.print("Amount:" + String((customKey-48)));
+      delay(3000);
+      lcd.clear();
+      lcd.print("Please Collect:");
+
+      if(tab==1)
+      {
+        for(int k=0;k<(customKey-48);k++)
+        { 
+        medc1.write(100);
+        delay(500);
+        medc1.write(0);
+        delay(1500);
+        }
+      }
+
+            if(tab==2)
+      {
+        for(int k=0;k<(customKey-48);k++)
+        { 
+        medc1.write(100);
+        delay(500);
+        medc1.write(0);
+        delay(1500);
+        }
+      }
+      send_sms(2);
+      delay(500);
+      }
+      else
+      {
+    lcd.clear();
+      lcd.print("No balance..");
+        
+      }
+      delay(3000);                
+    }
+}
+}
+
+void send_sms(int x )
+{
+Serial.println("Sending SMS...");
+Serial.println("AT");    
+delay(1000);  
+Serial.println("ATE0");    
+delay(1000);  
+Serial.println("AT+CMGF=1");    
+delay(1000);  
+Serial.print("AT+CMGS=");// Replace x with mobile number
+Serial.write('"');
+if(x==1)
+{
+  Serial.print(ph1);
+}
+
+if(x==2)
+{
+  Serial.print(ph2);
+ 
+}
+Serial.write('"');
+Serial.println();
+delay(1000);
+Serial.println("Dispenced Successfully");
+delay(1000);
+Serial.println((char)26);// ASCII code of CTRL+Z
+delay(1500);
+}
